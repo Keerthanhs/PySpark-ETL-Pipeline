@@ -1,61 +1,53 @@
 from pyspark.sql.functions import *
 
-def clean_data(df):
+# MAGIC %md
+# MAGIC #### DATA CLEANING (SILVER LAYER)
+# MAGIC
 
-    cleaned_df = (
+# COMMAND ----------
 
-        df.dropna(
-            subset=["customer_id"]
-        )
+df=df.dropna(subset=["customer_id"])
 
-        .filter(
-            col("amount") > 0
-        )
+# COMMAND ----------
 
-        .fillna(
-            {"city":"Unknown"}
-        )
+df=df.filter(df.amount>0)
 
-        .dropna(
-            subset=["date"]
-        )
-    )
+# COMMAND ----------
 
-    return cleaned_df
+df=df.fillna({
+    "city":"Unknown"
+})
 
+# COMMAND ----------
 
-def transform_data(df):
+df=df.dropna(subset=["date"])
 
-    transformed_df = (
+# COMMAND ----------
 
-        df.withColumn(
-            "date",
-            to_date(col("date"))
-        )
+# MAGIC %md
+# MAGIC #### DATA TRANSFORMATION (SILVER LAYER)
 
-        .withColumn(
-            "tax",
-            col("amount")*0.18
-        )
+# COMMAND ----------
 
-        .withColumn(
-            "final_amount",
-            col("amount")+
-            col("amount")*0.18
-        )
-    )
+df=df.withColumn(
+    "date",
+    to_date(col("date"))
+)
 
-    return transformed_df
+# COMMAND ----------
 
+df=df.withColumn(
+    "tax",
+    col("amount")*0.18
+)
 
-def incremental_load(new_df, existing_df):
+# COMMAND ----------
 
-    max_id = existing_df.agg(
-        max("order_id")
-    ).collect()[0][0]
+df=df.withColumn(
+    "final_amount",
+    col("amount")+col("tax")
+)
 
-    filtered_df = new_df.filter(
-        col("order_id") > max_id
-    )
+# COMMAND ----------
 
-    return filtered_df
+df.printSchema()
