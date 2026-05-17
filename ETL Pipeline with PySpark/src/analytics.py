@@ -1,36 +1,15 @@
 from pyspark.sql.functions import *
-from pyspark.sql.window import Window
 
+# MAGIC %md
+# MAGIC #### DATA ANALYTICS (GOLD LAYER)
+# MAGIC
 
-def revenue_by_city(df):
+# COMMAND ----------
 
-    result = (
-
-        df.groupBy("city")
-
-        .agg(
+result=df.groupBy("city")\
+         .agg(
             sum("final_amount")
-            .alias(
-                "total_revenue"
-            )
-        )
-    )
+            .alias("total_sales")
+         )
 
-    return result
-
-
-def customer_rank(df):
-
-    windowSpec = Window.partitionBy(
-        "city"
-    ).orderBy(
-        col("final_amount").desc()
-    )
-
-    ranked_df = df.withColumn(
-        "rank",
-        dense_rank()
-        .over(windowSpec)
-    )
-
-    return ranked_df
+result.show()
