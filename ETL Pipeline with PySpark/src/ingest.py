@@ -1,36 +1,27 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
 
-def create_spark():
+schema = StructType([
+    StructField("order_id", IntegerType(), True),
+    StructField("customer_id", StringType(), True),
+    StructField("product", StringType(), True),
+    StructField("amount", IntegerType(), True),
+    StructField("city", StringType(), True),
+    StructField("date", StringType(), True)
+])
 
-    spark = SparkSession.builder \
-        .appName("ETL_Pipeline") \
-        .getOrCreate()
+# COMMAND ----------
 
-    return spark
+df = spark.read \
+    .format("csv") \
+    .option("header",True) \
+    .schema(schema) \
+    .load("/Volumes/workspace/default/datasets/orders_large.csv")
 
+# COMMAND ----------
 
-def define_schema():
+df.display()
 
-    schema = StructType([
-        StructField("order_id", IntegerType(), True),
-        StructField("customer_id", StringType(), True),
-        StructField("product", StringType(), True),
-        StructField("amount", IntegerType(), True),
-        StructField("city", StringType(), True),
-        StructField("date", StringType(), True)
-    ])
+# COMMAND ----------
 
-    return schema
-
-
-def read_data(spark, path):
-
-    schema = define_schema()
-
-    df = spark.read \
-        .option("header", True) \
-        .schema(schema) \
-        .csv(path)
-
-    return df
+df.printSchema()
